@@ -2,23 +2,25 @@ import kotlin.math.*
 
 /*
 Enunciado 8:
-Num recinto de jogos radicais um canhão lança um jogador que tem de atingir uma rede vertical de segurança que se
-encontra à distância horizontal de 40m do canhão. A rede tem uma altura de 5m.
-(a) - Determine valores de velocidade inicial e de ângulo de lançamento que permitem que o jogador atinja a rede de
-segurança;
+Num recinto de jogos radicais um canhão lança um jogador que tem de atingir uma rede vertical de
+segurança que se encontra à distância horizontal de 40m do canhão. A rede tem uma altura de 5m.
+(a) - Determine valores de velocidade inicial e de ângulo de lançamento que permitem que o jogador atinja
+a rede de segurança;
 (b) - Trace a trajétoria do jogador durante o voo.
 O programa deve permitir alterar as condições iniciais do lançamento para poder simular diferentes
 cenários de voo.
 Sugestão: Calcule também o tempo de voo e tempo de subida.
 */
-
 fun main() {
     var resposta: Int
 
-    println("--- Cenário 8: Num recinto de jogos radicais um canhão lança um jogador que tem de atingir uma rede " +
-            "vertical que se encontra à distância horizontal de 40m do canhão. A rede tem uma altura de 5m ---")
+    println(
+        "--- Cenário 8: Num recinto de jogos radicais um canhão lança um jogador que tem de atingir uma rede " +
+                "vertical que se encontra à distância horizontal de 40m do canhão. A rede tem uma altura de 5m ---"
+    )
 
     do {
+        println("")
         println("Escolha uma opção:")
         println("1 - Simulação do gráfico")
         println("2 - Lista de combinações seguras")
@@ -53,8 +55,7 @@ fun simularGrafico() {
     val redColor = "\u001B[31m"
     val greenColor = "\u001B[32m"
 
-    val gravidadeTerra = 9.8 //gravidade da Terra em (m/s)^2
-    val gravidadePedida = 2 * gravidadeTerra
+    val gravidadeTerra = 9.8 // gravidade da Terra em (m/s)^2
 
     println("Introduza o ângulo de lançamento (0-90°):")
     val anguloGraus = readLine()!!.toDoubleOrNull()
@@ -78,29 +79,29 @@ fun simularGrafico() {
     }
 
     println("Introduza a altura da rede de segurança (m):")
-    val alturaRedeSeguranca = readLine()!!.toDoubleOrNull() //altura da rede de segurança em metros
+    val alturaRedeSeguranca = readLine()!!.toDoubleOrNull() ?: return
 
-    if(alturaRedeSeguranca == null || alturaRedeSeguranca < 0){
+    if (alturaRedeSeguranca < 0) {
         println("Altura da rede de segurança inválida")
         return
     }
 
     println("Introduza a que distância horizontal se encontra a rede de segurança (m):")
-    val distanciaHorizontalRede = readLine()!!.toDoubleOrNull() //distância horizontal da rede de segurança em metros
+    val distanciaHorizontalRede = readLine()!!.toDoubleOrNull() ?: return
 
-    if (distanciaHorizontalRede == null || distanciaHorizontalRede < 0){
+    if (distanciaHorizontalRede < 0) {
         println("Distancia horizontal da rede de segurança inválida.")
         return
     }
 
-    val anguloRadianos = anguloGraus * PI / 180
+    val anguloRadianos = anguloGraus * PI / 180.0
     val seno = sin(anguloRadianos)
     val cosseno = cos(anguloRadianos)
-    val alcanceH = (distanciaHorizontalRede / cosseno).pow(2) // calculo do alcance na horizontal
+    val alcanceH = (distanciaHorizontalRede / cosseno).pow(2) // cálculo do alcance na horizontal
     val alturaFinal = alturaInicial + (distanciaHorizontalRede * seno / cosseno)
     val velocidadeInicial = ((gravidadeTerra * alcanceH) / alturaFinal).pow(0.5)
 
-    val grafico = Chart(100, 30)
+    val grafico = Chart(80, 20)
 
     println("${redColor}Eixo X: Distância percorrida (m)${resetColor}")
     println("${greenColor}Eixo Y: Altura (m)${resetColor}")
@@ -108,91 +109,121 @@ fun simularGrafico() {
     var x = 0.0
     var y: Double? = alturaInicial
 
+    var atingiuAlturaRede = false // flag para verificar se atingiu a altura da rede antes de alcançar a posição da rede
+
     while (y != null && y >= 0.0) {
-        grafico.ponto(x, y)
-        x += 2.0
-        // calculo da próxima altura usando a equação do movimento com aceleração constante
-        val novoY = alturaInicial + (tan(anguloRadianos) * x) - ((gravidadePedida * x * x) / (2 * velocidadeInicial
-                * velocidadeInicial * cos(anguloRadianos) * cos(anguloRadianos)))
-        if (novoY < 0.0) break // encerra o loop se a altura (y) for menor que 0
+        val novoY = alturaInicial + (tan(anguloRadianos) * x) - ((gravidadeTerra * x * x) / (2 * velocidadeInicial * velocidadeInicial * cos(anguloRadianos) * cos(anguloRadianos)))
+        x += 1.0
         y = novoY
+        grafico.ponto(x, y)
+
+        // Verificar se a altura atinge ou ultrapassa a altura da rede antes de alcançar a posição da rede
+        if (y <= alturaRedeSeguranca) {
+            atingiuAlturaRede = true
+        }
+
+        // Verificar se a altura na posição da rede é menor ou igual à altura da rede e se já ultrapassou essa altura antes
+        if (x >= distanciaHorizontalRede && atingiuAlturaRede && y <= alturaRedeSeguranca) {
+            break
+        }
     }
 
     grafico.draw()
 
-    val alcanceHorizontal = velocidadeInicial * velocidadeInicial * seno * 2 * cosseno / gravidadePedida
-    val aterragemSegura = alturaInicial - (gravidadePedida * alcanceHorizontal.pow(2)) /
-            (2 * velocidadeInicial.pow(2) * cosseno.pow(2))
-    val tempoSubida = (velocidadeInicial * seno) / gravidadePedida
+    val alcanceHorizontal = (velocidadeInicial * velocidadeInicial * seno * cosseno) / gravidadeTerra
+    val aterragemSegura = alturaInicial - (gravidadeTerra * alcanceHorizontal * alcanceHorizontal) / (2 * velocidadeInicial * velocidadeInicial * cosseno * cosseno)
+    val tempoSubida = (velocidadeInicial * seno) / gravidadeTerra
     val tempoVoo = 2 * tempoSubida
 
-    if (aterragemSegura in 0.0..alturaRedeSeguranca) {
+    val alcanceMaximo = alcanceHorizontal + distanciaHorizontalRede
+    val alturaMaxima = alturaInicial + (velocidadeInicial * velocidadeInicial * seno * seno) / (2 * gravidadeTerra)
+
+    // Verifica se a aterragem ocorre na altura da rede de segurança ou abaixo dela quando o alcance horizontal alcança a distância horizontal da rede
+    if ((alturaMaxima ?: 0.0) <= alturaRedeSeguranca && x >= distanciaHorizontalRede) {
         println("\nAterragem segura na rede de segurança!")
         println("Valores ao atingir a rede de segurança:")
         println("Tempo de subida: $tempoSubida s")
         println("Tempo de voo: $tempoVoo s")
         println("Velocidade Inicial: $velocidadeInicial m/s")
         println("Ângulo de lançamento: $anguloGraus°")
+        println("Alcance Máximo: $alcanceMaximo m")
+        println("Altura Máxima: $alturaMaxima m")
     } else {
         println("\nAterragem fora da rede de segurança!")
         println("Não foi possível atingir a rede com os valores fornecidos.")
     }
 }
-
 fun listarCombinacoesSeguras() {
-    val gravidadeTerra = 9.8 //gravidade da Terra em (m/s)^2
-    val gravidadePedida = 2 * gravidadeTerra
+    val gravidadeTerra = 9.8 // gravidade da Terra em (m/s)^2
 
     println("\nIntroduza a altura inicial máxima desejada:")
     val alturaInicialMaxima = readLine()!!.toDoubleOrNull()
 
-    if(alturaInicialMaxima == null || alturaInicialMaxima <0){
+    if (alturaInicialMaxima == null || alturaInicialMaxima < 0) {
         println("Altura inicial máxima inválida.")
         return
     }
 
     println("Introduza a altura da rede de segurança (m):")
-    val alturaRedeSeguranca = readLine()!!.toDoubleOrNull() //altura da rede de segurança em metros
+    val alturaRedeSeguranca = readLine()!!.toDoubleOrNull() ?: return
 
-    if(alturaRedeSeguranca == null || alturaRedeSeguranca < 0){
+    if (alturaRedeSeguranca < 0) {
         println("Altura da rede de segurança inválida")
         return
     }
 
     println("Introduza a que distância horizontal se encontra a rede de segurança (m):")
-    val distanciaHorizontalRede = readLine()!!.toDoubleOrNull() //distância horizontal da rede de segurança em metros
+    val distanciaHorizontalRede = readLine()!!.toDoubleOrNull() ?: return
 
-    if (distanciaHorizontalRede == null || distanciaHorizontalRede < 0){
+    if (distanciaHorizontalRede < 0) {
         println("Distancia horizontal da rede de segurança inválida.")
         return
     }
+
+    var combinacoesSegurasEncontradas = false
 
     println("\nLista de combinações de valores disponíveis para aterrar com segurança:")
     println("| Ângulo | Altura |")
     println("|--------|--------|")
 
-    // for para calcular e listar as combinaçòes seguras de ângulo e altura
     for (angulo in 1..90) {
         for (altura in 1..alturaInicialMaxima.toInt()) {
-            val radianos = angulo * PI / 180
+            val radianos = angulo * PI / 180.0
             val sinAngulo = sin(radianos)
             val cosAngulo = cos(radianos)
 
-            //h relativa ao solo - eq.traj
-            val parte1Altura = altura + (distanciaHorizontalRede * sinAngulo / cosAngulo)
-            // calculo da velocidade para essa altura e angulo usando a equação de alcance horizontal
-            val velocidade =
-                ((gravidadeTerra * (distanciaHorizontalRede / cosAngulo).pow(2)) / parte1Altura).pow(0.5)
-            // calculo do alcance horizontal para essa velocidade e ângulo
-            val alcance = velocidade * velocidade * sinAngulo * 2 * cosAngulo / gravidadePedida
-            // calculo da altura de aterragem utilizado a fórmula da trajétoria
-            val aterragem =
-                altura - (gravidadePedida * alcance * alcance) / (2 * velocidade * velocidade * cosAngulo * cosAngulo)
+            val parte1Altura = altura + distanciaHorizontalRede * sinAngulo / cosAngulo
+            val velocidade = sqrt(gravidadeTerra * distanciaHorizontalRede * distanciaHorizontalRede / parte1Altura)
+            val alcance = velocidade * velocidade * sinAngulo * 2.0 * cosAngulo / gravidadeTerra
+            val aterragem = altura - gravidadeTerra * alcance * alcance / (2.0 * velocidade * velocidade * cosAngulo * cosAngulo)
 
-            // se a ateragem estiver entre 0 e a altura da rede imprime essa combinação como combinação segura
-            if (aterragem >= 0 && aterragem <= alturaRedeSeguranca) {
-                println("| ${angulo}°    | ${altura}m     |")
+            // Verificar se a aterragem ocorre na altura da rede de segurança ou abaixo dela quando o alcance horizontal alcança a distância horizontal da rede
+            if (aterragem <= alturaRedeSeguranca && alcance >= distanciaHorizontalRede) {
+
+                if(altura>9){
+                    println("| ${angulo}°    | ${altura}m    |")
+                    combinacoesSegurasEncontradas = true
+                } else if (altura<10){
+                    println("| ${angulo}°    | ${altura}m     |")
+                    combinacoesSegurasEncontradas = true
+
+                }else if (angulo<10){
+                    println("|  ${ angulo}°   | ${altura}m     |")
+                    combinacoesSegurasEncontradas = true
+
+                }     else{
+                    println("| ${angulo}°    | ${altura}m     |")
+                    combinacoesSegurasEncontradas = true
+                }
             }
+        }
+
+        if (!combinacoesSegurasEncontradas) {
+            println("Não foram encontradas combinações seguras para as condições dadas.")
         }
     }
 }
+
+
+
+
