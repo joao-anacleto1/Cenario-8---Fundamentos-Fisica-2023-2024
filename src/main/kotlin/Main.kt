@@ -62,6 +62,7 @@ fun simularGrafico() {
     println("Introduza o ângulo de lançamento (0-90°):")
     val anguloGraus = readLine()!!.toDoubleOrNull()
 
+    //valida a entrada do ângulo inserido pelo user
     if (anguloGraus == null || anguloGraus < 0 || anguloGraus > 90) {
         println("Ângulo inválido")
         return
@@ -70,11 +71,13 @@ fun simularGrafico() {
     println("Introduza a altura inicial (m):")
     val alturaInicial = readLine()!!.toDoubleOrNull()
 
+    //valida a alturna inicial inserida pelo user
     if (alturaInicial == null || alturaInicial < 0) {
         println("Altura inicial inválida")
         return
     }
 
+    //se a angulo e altura for 0 dizemos que ambos são inválidos de inserir pelo utilizador
     if (anguloGraus == 0.0 && alturaInicial == 0.0) {
         println("Ângulo e altura inicial inválida.")
         return
@@ -83,6 +86,7 @@ fun simularGrafico() {
     println("Introduza a altura da rede de segurança (m):")
     val alturaRedeSeguranca = readLine()!!.toDoubleOrNull() ?: return
 
+    //valida a altura da rede de segurança
     if (alturaRedeSeguranca < 0) {
         println("Altura da rede de segurança inválida")
         return
@@ -91,22 +95,23 @@ fun simularGrafico() {
     println("Introduza a que distância horizontal se encontra a rede de segurança (m):")
     val distanciaHorizontalRede = readLine()!!.toDoubleOrNull() ?: return
 
+    //valida distância horizontal da rede inserida pelo utilizador
     if (distanciaHorizontalRede < 0) {
         println("Distancia horizontal da rede de segurança inválida.")
         return
     }
 
-    val anguloRadianos = anguloGraus * PI / 180.0
+    val anguloRadianos = anguloGraus * PI / 180.0  //convertemos o angulo para radianos
 
-    val seno = sin(anguloRadianos)
+    val seno = sin(anguloRadianos) //calcula o seno do angulo
 
-    val cosseno = cos(anguloRadianos)
+    val cosseno = cos(anguloRadianos) //calcula o cosseno do angulo
 
-    val alcanceH = (distanciaHorizontalRede / cosseno).pow(2) // cálculo do alcance na horizontal
+    val alcanceH = (distanciaHorizontalRede / cosseno).pow(2) //calculo do alcance na horizontal
 
-    val alturaFinal = alturaInicial + (distanciaHorizontalRede * seno / cosseno)
+    val alturaFinal = alturaInicial + (distanciaHorizontalRede * seno / cosseno) //calculo da altura final
 
-    val velocidadeInicial = ((gravidadeTerra * alcanceH) / alturaFinal).pow(0.5)
+    val velocidadeInicial = ((gravidadeTerra * alcanceH) / alturaFinal).pow(0.5) //calculo da velocidade inicial
 
     val grafico = Chart(80, 20)
 
@@ -153,7 +158,7 @@ fun simularGrafico() {
     if ((alturaMaxima ?: 0.0) <= alturaRedeSeguranca && x >= distanciaHorizontalRede) {
         println("\n${green}Aterragem segura na rede de segurança!${resetColor}\n")
         println("Valores ao atingir a rede de segurança:\n")
-        println("${ciano}Tempo de subida:${resetColor} ${"%.2f".format(tempoSubida)}s")
+        println("${ciano}Tempo de subida:${resetColor} ${"%.2f".format(tempoSubida)} s")
         println("${ciano}Tempo de voo:${resetColor} ${"%.2f".format(tempoVoo)}s")
         println("${ciano}Velocidade Inicial:${resetColor} ${"%.2f".format(velocidadeInicial)}m/s")
         println("${ciano}Ângulo de lançamento:${resetColor} ${"%.2f".format(anguloGraus)}°")
@@ -192,19 +197,18 @@ fun listarCombinacoesSeguras() {
         return
     }
 
-    println("Listade combinações seguras para atingir a rede de segurança:")
+    println("Lista de combinações seguras para atingir a rede de segurança:")
     println("|Ângulo | Altura|")
 
     for (angulo in 1..90) {
         val anguloRadianos = angulo * PI / 180.0
 
-        for (altura in 1..alturaInicial.toInt()) { // Defina o intervalo de alturas iniciais a serem verificadas
+        for (altura in 1..alturaInicial.toInt()) {
             val seno = sin(anguloRadianos)
             val cosseno = cos(anguloRadianos)
             val alcanceHorizontal = (distanciaHorizontalRede / cosseno).pow(2) // cálculo do alcance na horizontal
             val alturaFinal = alturaInicial + (distanciaHorizontalRede * seno / cosseno)
             val velocidadeInicial = ((gravidadeTerra * alcanceHorizontal) / alturaFinal).pow(0.5)
-
             val alturaMaxima =
                 alturaInicial + (velocidadeInicial * velocidadeInicial * seno * seno) / (2 * gravidadeTerra)
 
@@ -226,6 +230,8 @@ fun listarCombinacoesSeguras() {
             }
         }
     }
+
+
 }
 
 
